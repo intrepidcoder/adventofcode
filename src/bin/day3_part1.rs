@@ -1,20 +1,19 @@
 use regex::Regex;
-use std::io;
+use std::io::{self, Read};
 
 fn main() {
-    let result: i64 = io::stdin()
-        .lines()
-        .map(|line| {
-            let line = line.expect("IO Error");
-            let re = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
+    let mut data = String::new();
+    io::stdin()
+        .lock()
+        .read_to_string(&mut data)
+        .expect("Error reading input");
+    let re = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
+    let result: i64 = re
+        .captures_iter(&data)
+        .map(|caps| {
+            let (_, [a, b]) = caps.extract();
 
-            re.captures_iter(&line)
-                .map(|caps| {
-                    let (_, [a, b]) = caps.extract();
-
-                    a.parse::<i64>().unwrap() * b.parse::<i64>().unwrap()
-                })
-                .sum::<i64>()
+            a.parse::<i64>().unwrap() * b.parse::<i64>().unwrap()
         })
         .sum();
     println!("{result}");
