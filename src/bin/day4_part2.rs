@@ -1,11 +1,7 @@
-use std::io;
+use adventofcode::input;
 
 fn main() {
-    let grid: Vec<Vec<char>> = io::stdin()
-        .lines()
-        .map(|line| line.expect("IO error").chars().collect())
-        .collect();
-
+    let grid = input::read_grid();
     let mut result: usize = 0;
 
     for x in 0..grid.len() {
