@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use std::{collections::HashMap, io};
+use std::io;
 
 fn main() {
     let mut height = 0;
@@ -16,17 +16,10 @@ fn main() {
                     width = width.max(*j);
                 })
                 .filter(|(_, c)| *c != '.')
-                .map(move |(j, c)| (i as isize, j as isize, c))
+                .map(move |(j, c)| (c, (i as isize, j as isize)))
                 .collect()
         })
-        .fold(
-            HashMap::new(),
-            |mut antennas: HashMap<_, Vec<_>>, (i, j, c)| {
-                antennas.entry(c).or_default().push((i, j));
-
-                antennas
-            },
-        );
+        .into_group_map();
     let height: isize = height as isize + 1;
     let width: isize = width as isize + 1;
 
