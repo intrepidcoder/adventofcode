@@ -1,17 +1,19 @@
+use itertools::Itertools;
 use std::{cmp::Ordering, collections::HashMap, io};
 
 fn main() {
     let mut input_lines = io::stdin().lines();
-    let mut rules: HashMap<(usize, usize), bool> = HashMap::new();
-    while let Some((a, b)) = {
-        let line = input_lines.next().unwrap().expect("IO error");
-        let mut nums = line.split('|').flat_map(|s| s.parse::<usize>());
-        nums.next().zip(nums.next())
-    } {
-        rules.insert((a, b), true);
-        rules.insert((b, a), false);
-    }
-    let rules = rules;
+    let rules: HashMap<(usize, usize), bool> = input_lines
+        .by_ref()
+        .map(|line| line.expect("IO error"))
+        .take_while(|line| !line.is_empty())
+        .flat_map(|line| {
+            line.split('|')
+                .flat_map(|s| s.parse::<usize>())
+                .collect_tuple()
+        })
+        .flat_map(|(a, b)| [((a, b), true), ((b, a), false)])
+        .collect();
 
     let result: usize = input_lines
         .map(|line: Result<_, _>| {

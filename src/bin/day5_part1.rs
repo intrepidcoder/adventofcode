@@ -1,16 +1,18 @@
+use itertools::Itertools;
 use std::{collections::HashMap, io};
 
 fn main() {
     let mut input_lines = io::stdin().lines();
-    let mut rules: Vec<(usize, usize)> = vec![];
-    while let Some(rule) = {
-        let line = input_lines.next().unwrap().expect("IO error");
-        let mut nums = line.split('|').flat_map(|s| s.parse::<usize>());
-        nums.next().zip(nums.next())
-    } {
-        rules.push(rule);
-    }
-    let rules = rules;
+    let rules: Vec<(usize, usize)> = input_lines
+        .by_ref()
+        .map(|line| line.expect("IO error"))
+        .take_while(|line| !line.is_empty())
+        .flat_map(|line| {
+            line.split('|')
+                .flat_map(|s| s.parse::<usize>())
+                .collect_tuple()
+        })
+        .collect();
 
     let result: usize = input_lines
         .map(|line: Result<_, _>| {
