@@ -1,12 +1,8 @@
+use adventofcode::input;
 use regex::Regex;
-use std::io::{self, Read};
 
 fn main() {
-    let mut data = String::new();
-    io::stdin()
-        .lock()
-        .read_to_string(&mut data)
-        .expect("Error reading input");
+    let data = input::read_string();
     let re = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
     let result: i64 = re
         .captures_iter(&data)

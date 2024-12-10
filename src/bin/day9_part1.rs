@@ -1,4 +1,4 @@
-use std::io::{self, Read};
+use adventofcode::input;
 
 #[derive(Debug)]
 enum Block {
@@ -7,11 +7,7 @@ enum Block {
 }
 
 fn main() {
-    let mut disk_map = String::new();
-    io::stdin()
-        .lock()
-        .read_to_string(&mut disk_map)
-        .expect("Error reading input");
+    let disk_map = input::read_string();
 
     let mut blocks: Vec<_> = disk_map
         .trim()

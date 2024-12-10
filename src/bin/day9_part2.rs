@@ -1,16 +1,8 @@
-use std::{
-    collections::BTreeSet,
-    io::{self, Read},
-    iter,
-};
+use adventofcode::input;
+use std::{collections::BTreeSet, iter};
 
 fn main() {
-    let mut disk_map = String::new();
-    io::stdin()
-        .lock()
-        .read_to_string(&mut disk_map)
-        .expect("Error reading input");
-
+    let disk_map = input::read_string();
     let mut blocks = vec![];
     let mut free_queues: Vec<BTreeSet<usize>> =
         iter::repeat_n(0, 10).map(|_| BTreeSet::new()).collect();

@@ -1,4 +1,4 @@
-use std::io::{self, Read};
+use adventofcode::input;
 
 #[derive(Debug, Eq, PartialEq)]
 enum Token {
@@ -33,11 +33,7 @@ fn parse_begin(s: &str) -> Option<Token> {
 }
 
 fn main() {
-    let mut data = String::new();
-    io::stdin()
-        .lock()
-        .read_to_string(&mut data)
-        .expect("Error reading input");
+    let data = input::read_string();
     let mut result = 0;
     let mut enabled = true;
     for i in 0..data.len() {
