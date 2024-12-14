@@ -19,18 +19,16 @@ fn floodfill(map: &Grid, start: usize) -> usize {
     visited[start] = true;
 
     while let Some(pos) = queue.pop_back() {
-        let (x, y) = map.coords(pos);
         let digit = map[pos].to_digit(10).unwrap();
-        let next_digit = char::from_digit(digit + 1, 10);
         if digit == 9 {
             result += 1;
             continue;
         }
+        let next_digit = char::from_digit(digit + 1, 10).unwrap();
 
         queue.extend(
-            map.neighbors(x, y)
-                .filter(|&(r, c)| map.get(r, c) == next_digit)
-                .map(|(r, c)| r * map.width() + c)
+            map.neighbors(pos)
+                .filter(|&next| map[next] == next_digit)
                 .filter(|&next| {
                     let v = visited[next];
                     if !v {

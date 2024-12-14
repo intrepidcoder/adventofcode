@@ -75,18 +75,23 @@ impl Grid {
         (0..self.height).contains(&r) && (0..self.width).contains(&c)
     }
 
-    pub fn neighbors(&self, r: usize, c: usize) -> Neighbors {
+    pub fn neighbors(&self, index: usize) -> Neighbors {
+        let (row, col) = self.coords(index);
         Neighbors {
-            north: r
+            north: row
                 .checked_sub(1)
-                .map(|row| (row, c))
-                .filter(|&(row, col)| self.in_bounds(row, col)),
-            west: Some((r, c + 1)).filter(|&(row, col)| self.in_bounds(row, col)),
-            south: Some((r + 1, c)).filter(|&(row, col)| self.in_bounds(row, col)),
-            east: c
+                .filter(|&r| self.in_bounds(r, col))
+                .map(|r| r * self.width + col),
+            west: Some((row, col + 1))
+                .filter(|&(r, c)| self.in_bounds(r, c))
+                .map(|(r, c)| r * self.width + c),
+            south: Some((row + 1, col))
+                .filter(|&(r, c)| self.in_bounds(r, c))
+                .map(|(r, c)| r * self.width + c),
+            east: col
                 .checked_sub(1)
-                .map(|col| (r, col))
-                .filter(|&(row, col)| self.in_bounds(row, col)),
+                .filter(|&c| self.in_bounds(row, c))
+                .map(|c| row * self.width + c),
         }
     }
 }
@@ -99,14 +104,14 @@ impl Deref for Grid {
 }
 
 pub struct Neighbors {
-    north: Option<(usize, usize)>,
-    west: Option<(usize, usize)>,
-    south: Option<(usize, usize)>,
-    east: Option<(usize, usize)>,
+    north: Option<usize>,
+    west: Option<usize>,
+    south: Option<usize>,
+    east: Option<usize>,
 }
 
 impl Iterator for Neighbors {
-    type Item = (usize, usize);
+    type Item = usize;
     fn next(&mut self) -> Option<Self::Item> {
         self.north.take().or_else(|| {
             self.west
@@ -148,18 +153,18 @@ mod test {
 
     #[test]
     fn test_neighbors() {
-        let grid = Grid::new("abc\ndef\nghi".to_string());
+        let grid = Grid::new("012\n345\n678".to_string());
         let mut neighbors = Vec::new();
-        neighbors.extend(grid.neighbors(1, 1));
-        assert_eq!(neighbors, vec![(0, 1), (1, 2), (2, 1), (1, 0)]);
+        neighbors.extend(grid.neighbors(4));
+        assert_eq!(neighbors, vec![1, 5, 7, 3]);
         neighbors.clear();
 
-        neighbors.extend(grid.neighbors(0, 0));
-        assert_eq!(neighbors, vec![(0, 1), (1, 0)]);
+        neighbors.extend(grid.neighbors(0));
+        assert_eq!(neighbors, vec![1, 3]);
         neighbors.clear();
 
-        neighbors.extend(grid.neighbors(2, 2));
-        assert_eq!(neighbors, vec![(1, 2), (2, 1)]);
+        neighbors.extend(grid.neighbors(8));
+        assert_eq!(neighbors, vec![5, 7]);
         neighbors.clear();
     }
 }
