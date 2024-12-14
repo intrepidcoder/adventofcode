@@ -75,24 +75,50 @@ impl Grid {
         (0..self.height).contains(&r) && (0..self.width).contains(&c)
     }
 
-    pub fn neighbors(&self, index: usize) -> Neighbors {
+    pub fn neighbors(&self, index: usize) -> impl Neighbors {
         let (row, col) = self.coords(index);
-        Neighbors {
-            north: row
-                .checked_sub(1)
+        NeighborsIter([
+            // north
+            row.checked_sub(1)
                 .filter(|&r| self.in_bounds(r, col))
                 .map(|r| r * self.width + col),
-            west: Some((row, col + 1))
+            // east
+            Some((row, col + 1))
                 .filter(|&(r, c)| self.in_bounds(r, c))
                 .map(|(r, c)| r * self.width + c),
-            south: Some((row + 1, col))
+            // south
+            Some((row + 1, col))
                 .filter(|&(r, c)| self.in_bounds(r, c))
                 .map(|(r, c)| r * self.width + c),
-            east: col
-                .checked_sub(1)
+            // west
+            col.checked_sub(1)
                 .filter(|&c| self.in_bounds(row, c))
                 .map(|c| row * self.width + c),
-        }
+        ])
+    }
+
+    /// Returns an Iterator over the 4 diagonal neighbors of a grid location
+    pub fn neighbors_diag(&self, index: usize) -> impl NeighborsDiag {
+        let (row, col) = self.coords(index);
+        NeighborsIter([
+            // north east
+            row.checked_sub(1)
+                .filter(|&r| self.in_bounds(r, col + 1))
+                .map(|r| r * self.width + (col + 1)),
+            // south east
+            Some((row + 1, col + 1))
+                .filter(|&(r, c)| self.in_bounds(r, c))
+                .map(|(r, c)| r * self.width + c),
+            // south west
+            col.checked_sub(1)
+                .filter(|&c| self.in_bounds(row + 1, c))
+                .map(|c| (row + 1) * self.width + c),
+            // north west
+            row.checked_sub(1)
+                .zip(col.checked_sub(1))
+                .filter(|&(r, c)| self.in_bounds(r, c))
+                .map(|(r, c)| r * self.width + c),
+        ])
     }
 }
 
@@ -103,27 +129,68 @@ impl Deref for Grid {
     }
 }
 
-pub struct Neighbors {
-    north: Option<usize>,
-    west: Option<usize>,
-    south: Option<usize>,
-    east: Option<usize>,
+pub trait Neighbors: Iterator<Item = usize> {
+    fn north(&self) -> Option<usize>;
+    fn east(&self) -> Option<usize>;
+    fn south(&self) -> Option<usize>;
+    fn west(&self) -> Option<usize>;
 }
 
-impl Iterator for Neighbors {
+pub trait NeighborsDiag: Iterator<Item = usize> {
+    fn north_east(&self) -> Option<usize>;
+    fn south_east(&self) -> Option<usize>;
+    fn south_west(&self) -> Option<usize>;
+    fn north_west(&self) -> Option<usize>;
+}
+
+pub struct NeighborsIter([Option<usize>; 4]);
+
+impl Neighbors for NeighborsIter {
+    fn north(&self) -> Option<usize> {
+        self.0[0]
+    }
+
+    fn east(&self) -> Option<usize> {
+        self.0[1]
+    }
+
+    fn south(&self) -> Option<usize> {
+        self.0[2]
+    }
+
+    fn west(&self) -> Option<usize> {
+        self.0[3]
+    }
+}
+
+impl Iterator for NeighborsIter {
     type Item = usize;
     fn next(&mut self) -> Option<Self::Item> {
-        self.north.take().or_else(|| {
-            self.west
-                .take()
-                .or_else(|| self.south.take().or_else(|| self.east.take()))
-        })
+        self.0.iter_mut().find_map(|opt| opt.take())
+    }
+}
+
+impl NeighborsDiag for NeighborsIter {
+    fn north_east(&self) -> Option<usize> {
+        self.0[0]
+    }
+
+    fn south_east(&self) -> Option<usize> {
+        self.0[1]
+    }
+
+    fn south_west(&self) -> Option<usize> {
+        self.0[2]
+    }
+
+    fn north_west(&self) -> Option<usize> {
+        self.0[3]
     }
 }
 
 #[cfg(test)]
 mod test {
-    use super::Grid;
+    use super::*;
 
     #[test]
     fn test_get() {
@@ -166,5 +233,40 @@ mod test {
         neighbors.extend(grid.neighbors(8));
         assert_eq!(neighbors, vec![5, 7]);
         neighbors.clear();
+
+        assert_eq!(grid.neighbors(4).north(), Some(1));
+        assert_eq!(grid.neighbors(4).east(), Some(5));
+        assert_eq!(grid.neighbors(4).south(), Some(7));
+        assert_eq!(grid.neighbors(4).west(), Some(3));
+    }
+
+    #[test]
+    fn test_neighbors_diag() {
+        let grid = Grid::new("012\n345\n678".to_string());
+        let mut neighbors = Vec::new();
+        neighbors.extend(grid.neighbors_diag(4));
+        assert_eq!(neighbors, vec![2, 8, 6, 0]);
+        neighbors.clear();
+
+        neighbors.extend(grid.neighbors_diag(0));
+        assert_eq!(neighbors, vec![4]);
+        neighbors.clear();
+
+        neighbors.extend(grid.neighbors_diag(8));
+        assert_eq!(neighbors, vec![4]);
+        neighbors.clear();
+
+        neighbors.extend(grid.neighbors_diag(1));
+        assert_eq!(neighbors, vec![5, 3]);
+        neighbors.clear();
+
+        neighbors.extend(grid.neighbors_diag(5));
+        assert_eq!(neighbors, vec![7, 1]);
+        neighbors.clear();
+
+        assert_eq!(grid.neighbors_diag(4).north_east(), Some(2));
+        assert_eq!(grid.neighbors_diag(4).south_east(), Some(8));
+        assert_eq!(grid.neighbors_diag(4).south_west(), Some(6));
+        assert_eq!(grid.neighbors_diag(4).north_west(), Some(0));
     }
 }
