@@ -114,52 +114,6 @@ impl Grid {
             .map(|(i, _)| self.pos(i))
     }
 
-    pub fn neighbors(&self, index: usize) -> impl Neighbors {
-        let (row, col) = self.coords(index);
-        NeighborsIterOld([
-            // north
-            row.checked_sub(1)
-                .filter(|&r| self.in_bounds(r, col))
-                .map(|r| r * self.width + col),
-            // east
-            Some((row, col + 1))
-                .filter(|&(r, c)| self.in_bounds(r, c))
-                .map(|(r, c)| r * self.width + c),
-            // south
-            Some((row + 1, col))
-                .filter(|&(r, c)| self.in_bounds(r, c))
-                .map(|(r, c)| r * self.width + c),
-            // west
-            col.checked_sub(1)
-                .filter(|&c| self.in_bounds(row, c))
-                .map(|c| row * self.width + c),
-        ])
-    }
-
-    /// Returns an Iterator over the 4 diagonal neighbors of a grid location
-    pub fn neighbors_diag(&self, index: usize) -> impl NeighborsDiag {
-        let (row, col) = self.coords(index);
-        NeighborsIterOld([
-            // north east
-            row.checked_sub(1)
-                .filter(|&r| self.in_bounds(r, col + 1))
-                .map(|r| r * self.width + (col + 1)),
-            // south east
-            Some((row + 1, col + 1))
-                .filter(|&(r, c)| self.in_bounds(r, c))
-                .map(|(r, c)| r * self.width + c),
-            // south west
-            col.checked_sub(1)
-                .filter(|&c| self.in_bounds(row + 1, c))
-                .map(|c| (row + 1) * self.width + c),
-            // north west
-            row.checked_sub(1)
-                .zip(col.checked_sub(1))
-                .filter(|&(r, c)| self.in_bounds(r, c))
-                .map(|(r, c)| r * self.width + c),
-        ])
-    }
-
     pub fn pos(&self, index: usize) -> Pos {
         Pos {
             index,
@@ -292,70 +246,12 @@ impl Pos {
     }
 }
 
-pub trait Neighbors: Iterator<Item = usize> {
-    fn north(&self) -> Option<usize>;
-    fn east(&self) -> Option<usize>;
-    fn south(&self) -> Option<usize>;
-    fn west(&self) -> Option<usize>;
-}
-
-pub trait NeighborsDiag: Iterator<Item = usize> {
-    fn north_east(&self) -> Option<usize>;
-    fn south_east(&self) -> Option<usize>;
-    fn south_west(&self) -> Option<usize>;
-    fn north_west(&self) -> Option<usize>;
-}
-
 pub struct NeighborsIter([Option<Pos>; 8]);
-pub struct NeighborsIterOld([Option<usize>; 4]);
-
-impl Neighbors for NeighborsIterOld {
-    fn north(&self) -> Option<usize> {
-        self.0[0]
-    }
-
-    fn east(&self) -> Option<usize> {
-        self.0[1]
-    }
-
-    fn south(&self) -> Option<usize> {
-        self.0[2]
-    }
-
-    fn west(&self) -> Option<usize> {
-        self.0[3]
-    }
-}
-
-impl Iterator for NeighborsIterOld {
-    type Item = usize;
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0.iter_mut().find_map(|opt| opt.take())
-    }
-}
 
 impl Iterator for NeighborsIter {
     type Item = Pos;
     fn next(&mut self) -> Option<Self::Item> {
         self.0.iter_mut().find_map(|opt| opt.take())
-    }
-}
-
-impl NeighborsDiag for NeighborsIterOld {
-    fn north_east(&self) -> Option<usize> {
-        self.0[0]
-    }
-
-    fn south_east(&self) -> Option<usize> {
-        self.0[1]
-    }
-
-    fn south_west(&self) -> Option<usize> {
-        self.0[2]
-    }
-
-    fn north_west(&self) -> Option<usize> {
-        self.0[3]
     }
 }
 

@@ -28,7 +28,9 @@ fn floodfill(map: &Grid, start: usize) -> usize {
         let next_digit = char::from_digit(digit + 1, 10).unwrap();
 
         queue.extend(
-            map.neighbors(pos)
+            map.pos(pos)
+                .neighbors(map)
+                .map(|p| p.index())
                 .filter(|&next| map[next] == next_digit)
                 .filter(|&next| {
                     let v = visited[next];

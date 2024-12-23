@@ -28,11 +28,15 @@ fn floodfill(map: &Grid, visited: &mut [bool], start: usize) -> usize {
         area += 1;
 
         perimeter += 4 - map
-            .neighbors(pos)
+            .pos(pos)
+            .neighbors(map)
+            .map(|p| p.index())
             .filter(|&next| map[next] == map[start])
             .count();
         queue.extend(
-            map.neighbors(pos)
+            map.pos(pos)
+                .neighbors(map)
+                .map(|p| p.index())
                 .filter(|&next| map[next] == map[start])
                 .filter(|&next| {
                     let v = visited[next];
