@@ -1,4 +1,4 @@
-use adventofcode::grid::{Grid, Neighbors};
+use adventofcode::grid::{Grid, Pos};
 use std::io::{self, BufRead};
 
 fn solve(mut input: impl BufRead) -> usize {
@@ -15,18 +15,18 @@ fn solve(mut input: impl BufRead) -> usize {
 
     let mut pos = start;
     for dir in moves.chars() {
-        let advance = |index| match dir {
-            '^' => grid.neighbors(index).north(),
-            '>' => grid.neighbors(index).east(),
-            'v' => grid.neighbors(index).south(),
-            '<' => grid.neighbors(index).west(),
+        let advance = |p: Pos| match dir {
+            '^' => p.north(&grid),
+            '>' => p.east(&grid),
+            'v' => p.south(&grid),
+            '<' => p.west(&grid),
             _ => None,
         };
 
         let Some(next_pos) = advance(pos) else {
             continue;
         };
-        match grid[next_pos] {
+        match next_pos.value() {
             '.' => {
                 grid.set(pos, '.');
                 grid.set(next_pos, '@');
@@ -36,11 +36,11 @@ fn solve(mut input: impl BufRead) -> usize {
                 let mut box_pos = next_pos;
                 while let Some(next_box) = advance(box_pos) {
                     box_pos = next_box;
-                    if grid[next_box] != 'O' {
+                    if next_box.value() != 'O' {
                         break;
                     }
                 }
-                if grid[box_pos] == '.' {
+                if box_pos.value() == '.' {
                     // Push box
                     grid.set(pos, '.');
                     grid.set(next_pos, '@');
