@@ -1,4 +1,8 @@
-use std::{io, ops::Deref};
+use std::{
+    fmt::{self, Display, Write},
+    io,
+    ops::Deref,
+};
 
 #[derive(Debug)]
 pub struct Grid {
@@ -126,6 +130,15 @@ impl Deref for Grid {
     type Target = [char];
     fn deref(&self) -> &Self::Target {
         self.grid.as_slice()
+    }
+}
+
+impl Display for Grid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.grid.chunks_exact(self.width).try_for_each(|line| {
+            let buffer: String = line.iter().collect();
+            f.write_str(&buffer).and_then(|_| f.write_char('\n'))
+        })
     }
 }
 
