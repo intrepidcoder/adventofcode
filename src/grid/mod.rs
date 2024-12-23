@@ -81,6 +81,11 @@ impl Grid {
         (0..self.height).contains(&r) && (0..self.width).contains(&c)
     }
 
+    /// Set a grid element by index.
+    pub fn set(&mut self, index: usize, val: char) {
+        self.grid[index] = val;
+    }
+
     /// Find first index of c in the grid
     pub fn find_char(&self, ch: char) -> Option<usize> {
         self.grid
