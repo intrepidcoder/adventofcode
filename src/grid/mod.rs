@@ -1,6 +1,6 @@
 use std::{
     fmt::{self, Display, Write},
-    io,
+    io::{self, BufRead},
     ops::Deref,
 };
 
@@ -33,10 +33,14 @@ impl Grid {
     }
 
     pub fn read_from_input() -> Self {
+        Grid::read_from_buf(&mut io::stdin().lock())
+    }
+
+    pub fn read_from_buf(input: &mut impl BufRead) -> Self {
         let mut grid = Vec::new();
         let mut width = 0;
         let mut height = 0;
-        let lines = io::stdin()
+        let lines = input
             .lines()
             .map(|line| line.expect("IO error"))
             .take_while(|line| !line.is_empty());
