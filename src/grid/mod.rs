@@ -81,6 +81,15 @@ impl Grid {
         (0..self.height).contains(&r) && (0..self.width).contains(&c)
     }
 
+    /// Find first index of c in the grid
+    pub fn find_char(&self, ch: char) -> Option<usize> {
+        self.grid
+            .iter()
+            .enumerate()
+            .find(|&(_, c)| *c == ch)
+            .map(|(i, _)| i)
+    }
+
     pub fn neighbors(&self, index: usize) -> impl Neighbors {
         let (row, col) = self.coords(index);
         NeighborsIter([
