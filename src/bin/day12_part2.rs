@@ -1,4 +1,4 @@
-use adventofcode::grid::{Grid, Neighbors, NeighborsDiag};
+use adventofcode::grid::Grid;
 use std::collections::VecDeque;
 
 fn main() {
@@ -24,16 +24,16 @@ fn floodfill(map: &Grid, visited: &mut [bool], start: usize) -> usize {
     let mut perimeter = 0;
     visited[start] = true;
 
-    while let Some(pos) = queue.pop_back() {
+    while let Some(index) = queue.pop_back() {
         // The number of edges equals the number of corners since there are 2 edges per corner and
         // vice versa. Thus, count corners.
 
         area += 1;
-        let neighbors = map.neighbors(pos);
-        let north = neighbors.north().is_some_and(|i| map[i] == map[pos]);
-        let east = neighbors.east().is_some_and(|i| map[i] == map[pos]);
-        let south = neighbors.south().is_some_and(|i| map[i] == map[pos]);
-        let west = neighbors.west().is_some_and(|i| map[i] == map[pos]);
+        let pos = map.pos(index);
+        let north = pos.north(map).is_some_and(|p| p.value() == map[index]);
+        let east = pos.east(map).is_some_and(|p| p.value() == map[index]);
+        let south = pos.south(map).is_some_and(|p| p.value() == map[index]);
+        let west = pos.west(map).is_some_and(|p| p.value() == map[index]);
 
         // Count convex corners
         perimeter += (!north && !east) as usize;
@@ -42,35 +42,35 @@ fn floodfill(map: &Grid, visited: &mut [bool], start: usize) -> usize {
         perimeter += (!west && !north) as usize;
 
         // Count concave corners
-        let neighbors_diag = map.neighbors_diag(pos);
         perimeter += (north
             && east
-            && neighbors_diag
-                .north_east()
-                .filter(|&i| map[i] == map[pos])
+            && pos
+                .north_east(map)
+                .filter(|&p| p.value() == map[index])
                 .is_none()) as usize;
         perimeter += (east
             && south
-            && neighbors_diag
-                .south_east()
-                .filter(|&i| map[i] == map[pos])
+            && pos
+                .south_east(map)
+                .filter(|&p| p.value() == map[index])
                 .is_none()) as usize;
         perimeter += (south
             && west
-            && neighbors_diag
-                .south_west()
-                .filter(|&i| map[i] == map[pos])
+            && pos
+                .south_west(map)
+                .filter(|&p| p.value() == map[index])
                 .is_none()) as usize;
         perimeter += (west
             && north
-            && neighbors_diag
-                .north_west()
-                .filter(|&i| map[i] == map[pos])
+            && pos
+                .north_west(map)
+                .filter(|&p| p.value() == map[index])
                 .is_none()) as usize;
 
         queue.extend(
-            map.neighbors(pos)
-                .filter(|&next| map[next] == map[start])
+            pos.neighbors(map)
+                .filter(|&p| p.value() == map[start])
+                .map(|p| p.index())
                 .filter(|&next| {
                     let v = visited[next];
                     if !v {
