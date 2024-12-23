@@ -36,9 +36,11 @@ impl Grid {
         let mut grid = Vec::new();
         let mut width = 0;
         let mut height = 0;
-        for line in io::stdin().lines() {
-            let line = line.expect("IO error");
-
+        let lines = io::stdin()
+            .lines()
+            .map(|line| line.expect("IO error"))
+            .take_while(|line| !line.is_empty());
+        for line in lines {
             grid.extend(line.chars());
             if width == 0 {
                 width = grid.len();
