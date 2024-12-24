@@ -1,4 +1,4 @@
-use crate::grid::Grid;
+use crate::grid::{DirectedPos, Direction, Grid};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Pos {
@@ -112,6 +112,10 @@ impl Pos {
             self.west(grid),
             self.north_west(grid),
         ])
+    }
+
+    pub fn directed(self, dir: Direction) -> DirectedPos {
+        DirectedPos::new(self, dir)
     }
 }
 

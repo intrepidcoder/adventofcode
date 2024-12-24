@@ -4,7 +4,10 @@ use std::{
     ops::Deref,
 };
 
+mod directed_pos;
 mod pos;
+pub use directed_pos::DirectedPos;
+pub use directed_pos::Direction;
 pub use pos::Pos;
 
 #[derive(Debug)]
