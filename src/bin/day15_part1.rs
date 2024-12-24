@@ -1,4 +1,4 @@
-use adventofcode::grid::{Grid, Pos};
+use adventofcode::grid::{Direction, Grid};
 use std::io::{self, BufRead};
 
 fn solve(mut input: impl BufRead) -> usize {
@@ -15,26 +15,24 @@ fn solve(mut input: impl BufRead) -> usize {
 
     let mut pos = start;
     for dir in moves.chars() {
-        let advance = |p: Pos| match dir {
-            '^' => p.north(&grid),
-            '>' => p.east(&grid),
-            'v' => p.south(&grid),
-            '<' => p.west(&grid),
-            _ => None,
+        let direction = match dir {
+            '^' => Direction::North,
+            '>' => Direction::East,
+            'v' => Direction::South,
+            '<' => Direction::West,
+            _ => continue,
         };
 
-        let Some(next_pos) = advance(pos) else {
-            continue;
-        };
+        let next_pos = pos.directed(direction).advance(&grid).unwrap();
         match next_pos.value() {
             '.' => {
                 grid.set(pos, '.');
-                grid.set(next_pos, '@');
-                pos = next_pos;
+                grid.set(next_pos.pos(), '@');
+                pos = next_pos.pos();
             }
             'O' => {
                 let mut box_pos = next_pos;
-                while let Some(next_box) = advance(box_pos) {
+                while let Some(next_box) = box_pos.advance(&grid) {
                     box_pos = next_box;
                     if next_box.value() != 'O' {
                         break;
@@ -43,9 +41,9 @@ fn solve(mut input: impl BufRead) -> usize {
                 if box_pos.value() == '.' {
                     // Push box
                     grid.set(pos, '.');
-                    grid.set(next_pos, '@');
-                    grid.set(box_pos, 'O');
-                    pos = next_pos;
+                    grid.set(next_pos.pos(), '@');
+                    grid.set(box_pos.pos(), 'O');
+                    pos = next_pos.pos();
                 }
             }
             _ => (),
