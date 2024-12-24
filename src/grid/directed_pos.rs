@@ -1,4 +1,5 @@
 use crate::grid::{Grid, Pos};
+use std::hash::{Hash, Hasher};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct DirectedPos {
@@ -128,6 +129,13 @@ impl DirectedPos {
     }
 }
 
+impl Hash for DirectedPos {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.index().hash(state);
+        self.direction().hash(state);
+    }
+}
+
 pub struct AdvanceIter<'grid> {
     grid: &'grid Grid,
     pos: Option<DirectedPos>,
@@ -142,7 +150,7 @@ impl Iterator for AdvanceIter<'_> {
 }
 
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Direction {
     North = 0,
     NorthEast = 1,
