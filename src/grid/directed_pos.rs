@@ -7,7 +7,7 @@ pub struct DirectedPos {
 }
 
 impl DirectedPos {
-    pub fn new(pos: Pos, dir: Direction) -> Self {
+    pub(crate) fn new(pos: Pos, dir: Direction) -> Self {
         Self { pos, dir }
     }
 
@@ -75,6 +75,26 @@ impl DirectedPos {
         }
     }
 
+    pub fn advance(&self, grid: &Grid) -> Option<Self> {
+        match self.dir {
+            Direction::North => self.north(grid),
+            Direction::NorthEast => self.north_east(grid),
+            Direction::East => self.east(grid),
+            Direction::SouthEast => self.south_east(grid),
+            Direction::South => self.south(grid),
+            Direction::SouthWest => self.south_west(grid),
+            Direction::West => self.west(grid),
+            Direction::NorthWest => self.north_west(grid),
+        }
+    }
+
+    pub fn advance_iter(self, grid: &Grid) -> AdvanceIter {
+        AdvanceIter {
+            grid,
+            pos: Some(self),
+        }
+    }
+
     pub fn north(&self, grid: &Grid) -> Option<DirectedPos> {
         self.pos.north(grid).map(|p| Self::new(p, self.dir))
     }
@@ -105,6 +125,19 @@ impl DirectedPos {
 
     pub fn north_west(&self, grid: &Grid) -> Option<DirectedPos> {
         self.pos.north_west(grid).map(|p| Self::new(p, self.dir))
+    }
+}
+
+pub struct AdvanceIter<'grid> {
+    grid: &'grid Grid,
+    pos: Option<DirectedPos>,
+}
+
+impl Iterator for AdvanceIter<'_> {
+    type Item = DirectedPos;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.pos = self.pos.and_then(|p| p.advance(self.grid));
+        self.pos
     }
 }
 
@@ -193,5 +226,36 @@ mod test {
             assert_eq!(pos, pos.ccw().cw45().cw45());
             assert_eq!(pos.cw().cw(), pos.reverse());
         }
+    }
+
+    #[test]
+    fn test_advance() {
+        let grid = Grid::new("012\n345\n678".to_string());
+        let mut pos = DirectedPos::new(grid.pos(0), Direction::East);
+        pos = pos.advance(&grid).unwrap();
+        assert_eq!(pos.index(), 1);
+        assert_eq!(pos.direction(), Direction::East);
+        pos = pos.cw().advance(&grid).unwrap();
+        assert_eq!(pos.index(), 4);
+        assert_eq!(pos.direction(), Direction::South);
+        pos = pos.cw45().advance(&grid).unwrap();
+        assert_eq!(pos.index(), 6);
+        assert_eq!(pos.direction(), Direction::SouthWest);
+        assert_eq!(pos.advance(&grid), None);
+    }
+
+    #[test]
+    fn test_advance_iter() {
+        let grid = Grid::new("012\n345\n678".to_string());
+        let pos = grid.pos(0).directed(Direction::East);
+        let mut actual = Vec::new();
+        actual.extend(pos.advance_iter(&grid).map(|p| p.index()));
+        assert_eq!(actual, vec![1, 2]);
+        actual.clear();
+
+        let pos = grid.pos(2).directed(Direction::SouthWest);
+        actual.extend(pos.advance_iter(&grid).map(|p| p.index()));
+        assert_eq!(actual, vec![4, 6]);
+        actual.clear();
     }
 }
