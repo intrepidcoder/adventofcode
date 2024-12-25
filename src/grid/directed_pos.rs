@@ -96,6 +96,19 @@ impl DirectedPos {
         }
     }
 
+    pub fn retreat(&self, grid: &Grid) -> Option<Self> {
+        match self.dir {
+            Direction::North => self.south(grid),
+            Direction::NorthEast => self.south_west(grid),
+            Direction::East => self.west(grid),
+            Direction::SouthEast => self.north_west(grid),
+            Direction::South => self.north(grid),
+            Direction::SouthWest => self.north_east(grid),
+            Direction::West => self.east(grid),
+            Direction::NorthWest => self.south_east(grid),
+        }
+    }
+
     pub fn north(&self, grid: &Grid) -> Option<DirectedPos> {
         self.pos.north(grid).map(|p| Self::new(p, self.dir))
     }
