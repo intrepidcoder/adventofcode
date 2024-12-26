@@ -19,21 +19,11 @@ pub struct Grid {
 }
 
 impl Grid {
-    pub fn new(s: String) -> Self {
-        let mut grid = Vec::new();
-        let mut width = 0;
-        let mut height = 0;
-
-        for line in s.split_terminator('\n') {
-            grid.extend(line.chars());
-            if width == 0 {
-                width = grid.len();
-            }
-            height += 1;
-        }
-
+    /// Create a grid with the specified width and height where all positions are set to the
+    /// `fill_value` char.
+    pub fn new(width: usize, height: usize, fill_value: char) -> Self {
         Self {
-            grid,
+            grid: vec![fill_value; width * height],
             width,
             height,
         }
@@ -202,11 +192,11 @@ mod test {
 
     #[test]
     fn test_set_index() {
-        let mut grid: Grid = "abc\ndef\nghi\njkl".parse().unwrap();
+        let mut grid: Grid = Grid::new(3, 4, '.');
         for i in 0..grid.len() {
-            assert_ne!(grid[i], '.');
-            grid.set_index(i, '.');
             assert_eq!(grid[i], '.');
+            grid.set_index(i, '#');
+            assert_eq!(grid[i], '#');
         }
     }
 
