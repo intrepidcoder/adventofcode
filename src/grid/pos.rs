@@ -134,7 +134,7 @@ mod test {
 
     #[test]
     fn test_directions() {
-        let grid = Grid::new("012\n345\n678".to_string());
+        let grid: Grid = "012\n345\n678".parse().unwrap();
         let pos = grid.pos(4);
         assert_eq!(pos.north(&grid).unwrap().index(), 1);
         assert_eq!(pos.north_east(&grid).unwrap().index(), 2);
@@ -154,7 +154,7 @@ mod test {
 
     #[test]
     fn test_neighbors() {
-        let grid = Grid::new("012\n345\n678".to_string());
+        let grid: Grid = "012\n345\n678".parse().unwrap();
         let mut neighbors = Vec::new();
         neighbors.extend(grid.pos(4).neighbors(&grid).map(|p| p.index()));
         assert_eq!(neighbors, vec![1, 5, 7, 3]);
@@ -171,7 +171,7 @@ mod test {
 
     #[test]
     fn test_neighbors_diag() {
-        let grid = Grid::new("012\n345\n678".to_string());
+        let grid: Grid = "012\n345\n678".parse().unwrap();
         let mut neighbors = Vec::new();
         neighbors.extend(grid.pos(4).neighbors_diag(&grid).map(|p| p.index()));
         assert_eq!(neighbors, vec![2, 8, 6, 0]);

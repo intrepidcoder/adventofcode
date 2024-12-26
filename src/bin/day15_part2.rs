@@ -18,7 +18,7 @@ fn solve(mut input: impl BufRead) -> usize {
         .replace('O', "[]")
         .replace('.', "..")
         .replace('@', "@.");
-    let mut grid = Grid::new(widened_string);
+    let mut grid: Grid = widened_string.parse().unwrap();
     let mut moves = String::new();
     while let Ok(len) = input.read_line(&mut moves) {
         if len == 0 {

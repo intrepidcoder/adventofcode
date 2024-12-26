@@ -225,7 +225,7 @@ mod test {
 
     #[test]
     fn test_pos() {
-        let grid = Grid::new("012\n345\n678".to_string());
+        let grid: Grid = "012\n345\n678".parse().unwrap();
         let pos = DirectedPos::new(grid.pos(4), Direction::North);
         assert_eq!(pos, grid.pos(4).directed(Direction::North));
         assert_eq!(pos.direction(), Direction::North);
@@ -238,7 +238,7 @@ mod test {
 
     #[test]
     fn test_rotations() {
-        let grid = Grid::new("012\n345\n678".to_string());
+        let grid: Grid = "012\n345\n678".parse().unwrap();
         let first_pos = DirectedPos::new(grid.pos(4), Direction::North);
 
         for pos in iter::successors(Some(first_pos), |p| Some(p.cw45())).take(8) {
@@ -251,7 +251,7 @@ mod test {
 
     #[test]
     fn test_advance() {
-        let grid = Grid::new("012\n345\n678".to_string());
+        let grid: Grid = "012\n345\n678".parse().unwrap();
         let mut pos = DirectedPos::new(grid.pos(0), Direction::East);
         pos = pos.advance(&grid).unwrap();
         assert_eq!(pos.index(), 1);
@@ -267,7 +267,7 @@ mod test {
 
     #[test]
     fn test_advance_iter() {
-        let grid = Grid::new("012\n345\n678".to_string());
+        let grid: Grid = "012\n345\n678".parse().unwrap();
         let pos = grid.pos(0).directed(Direction::East);
         let mut actual = Vec::new();
         actual.extend(pos.advance_iter(&grid).map(|p| p.index()));
