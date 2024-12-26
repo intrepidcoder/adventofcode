@@ -2,6 +2,7 @@ use std::{
     fmt::{self, Display, Write},
     io::{self, BufRead},
     ops::Deref,
+    str::FromStr,
 };
 
 mod directed_pos;
@@ -141,14 +142,43 @@ impl Display for Grid {
     }
 }
 
+impl FromStr for Grid {
+    type Err = GridParseError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut grid = Vec::new();
+        let mut width = 0;
+        let mut height = 0;
+
+        for line in s.trim().split_terminator('\n') {
+            grid.extend(line.chars());
+            if width == 0 {
+                width = line.len();
+            } else if line.len() != width {
+                return Err(GridParseError::UnevenWidths);
+            }
+            height += 1;
+        }
+
+        Ok(Self {
+            grid,
+            width,
+            height,
+        })
+    }
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub enum GridParseError {
+    UnevenWidths,
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
     fn test_get() {
-        let s = "abc\ndef\nghi\njkl".to_string();
-        let grid = Grid::new(s);
+        let grid: Grid = "abc\ndef\nghi\njkl".parse().unwrap();
         for (i, c) in ('a'..='l').enumerate() {
             assert_eq!(
                 grid.get(i / 3, i % 3),
@@ -160,8 +190,7 @@ mod test {
 
     #[test]
     fn test_deref() {
-        let s = "abc\ndef\nghi\njkl".to_string();
-        let grid = Grid::new(s);
+        let grid: Grid = "abc\ndef\nghi\njkl".parse().unwrap();
         assert_eq!(grid.len(), 12);
         assert!(grid.iter().copied().eq("abcdefghijkl".chars()));
 
@@ -173,11 +202,19 @@ mod test {
 
     #[test]
     fn test_set_index() {
-        let mut grid = Grid::new("abc\ndef\nghi\njkl".to_string());
+        let mut grid: Grid = "abc\ndef\nghi\njkl".parse().unwrap();
         for i in 0..grid.len() {
             assert_ne!(grid[i], '.');
             grid.set_index(i, '.');
             assert_eq!(grid[i], '.');
         }
+    }
+
+    #[test]
+    fn test_from_str() {
+        assert!("abc\ndef\nghi\njkl".parse::<Grid>().is_ok());
+        assert!("abc\nde\nghi\njkl"
+            .parse::<Grid>()
+            .is_err_and(|e| e == GridParseError::UnevenWidths));
     }
 }
